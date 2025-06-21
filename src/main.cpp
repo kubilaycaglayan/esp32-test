@@ -1,22 +1,22 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+
+// Blink the led on ESP32 board
+#define LED_BUILTIN 2 // Define the built-in LED pin for ESP32
+#define LED_PIN 4
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
-  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT); // Initialize the built-in LED pin as an output
+  pinMode(LED_PIN, OUTPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.println("Hello, World!");
-  Serial.println("Result of myFunction(2, 3): ");
-  delay(1000); // Delay for 1 second
+  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_PIN, LOW);
+  delay(1000);
+
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
-}
