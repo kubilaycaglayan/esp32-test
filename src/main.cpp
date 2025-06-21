@@ -1,24 +1,26 @@
 #include <Arduino.h>
-#include "esp_bt_device.h"
 #include <Ps3Controller.h>
 #include <ESP32Servo.h>
 
-Servo myServo;
+#include "esp_bt_device.h"
+#include "steering.h"
+
+Servo steeringServo;
 
 #define LED_PIN 4
-#define SERVO_PIN 14
+
 
 bool ledState = false;
 unsigned long lastBlinkTime = 0;
 
 void onLeftButtonPressed() {
   Serial.println("Left button pressed");
-  myServo.write(180);
+  steeringServo.write(180);
 }
 
 void onRightButtonPressed() {
   Serial.println("Right button pressed");
-  myServo.write(0);
+  steeringServo.write(0);
 }
 
 
@@ -31,7 +33,7 @@ void testServo() {
   Serial.println("Moving to 0 degrees...");
 
   for (int i = 0; i <= 360; i += 10) {
-    myServo.write(i);
+    steeringServo.write(i);
     Serial.print("Moving to ");
     Serial.print(i);
     Serial.println(" degrees...");
@@ -40,12 +42,7 @@ void testServo() {
   Serial.println("Stopping.");
 }
 
-void setupServo() {
-  myServo.attach(SERVO_PIN);
-  myServo.write(90);
-  myServo.setPeriodHertz(50);
-  myServo.attach(SERVO_PIN, 200, 3000);
-}
+
 
 
 void notify() {
@@ -85,7 +82,7 @@ void notify() {
   }
 
   if (!Ps3.data.button.left && !Ps3.data.button.right) {
-    myServo.write(90);
+    steeringServo.write(90);
     Serial.println("Returning servo to center (90°)");
   }
 }
@@ -102,7 +99,7 @@ void setup() {
   Ps3.begin("3C:8A:1F:AF:7F:D2");
   setupServo();
 
-  myServo.write(90);
+  steeringServo.write(90);
   testServo();
 }
 
