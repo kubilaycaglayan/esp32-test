@@ -1,22 +1,42 @@
 #include <Arduino.h>
+#include <Ps3Controller.h>
+#include "esp_bt_device.h"
 
-
-// Blink the led on ESP32 board
-#define LED_BUILTIN 2 // Define the built-in LED pin for ESP32
 #define LED_PIN 4
 
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT); // Initialize the built-in LED pin as an output
-  pinMode(LED_PIN, OUTPUT);
+void notify()
+{
+    Serial.print(Ps3.data.sensor.accelerometer.x);
+    Serial.print(" ");
+    Serial.print(Ps3.data.sensor.accelerometer.y);
+    Serial.print(" ");
+    Serial.print(Ps3.data.sensor.accelerometer.z);
+
+    /* Uncomment the following if you also want
+       to display the gryoscope data: */
+    // Serial.print(" ");
+    // Serial.print(Ps3.data.sensor.gyroscope.z);
+
+
 }
 
-void loop() {
-  digitalWrite(LED_BUILTIN, LOW);
-  digitalWrite(LED_PIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, HIGH);
-  digitalWrite(LED_PIN, LOW);
-  delay(1000);
 
+void setup()
+{
+    Serial.begin(115200);
+    Ps3.attach(notify);
+    Ps3.begin("3C:8A:1F:AF:7F:D2");
 }
 
+
+void loop()
+{
+  if (Ps3.isConnected()) {
+    if (Ps3.data.button.cross) {
+      digitalWrite(LED_PIN, HIGH);
+    } else {
+      digitalWrite(LED_PIN, LOW);
+    }
+  }
+
+}
