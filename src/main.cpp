@@ -5,8 +5,8 @@
 
 Servo myServo;
 
-#define LED_PIN 4  // Pin for the LED
-#define SERVO_PIN 14  // GPIO pin connected to servo signal
+#define LED_PIN 4
+#define SERVO_PIN 14
 
 bool ledState = false;
 unsigned long lastBlinkTime = 0;
@@ -28,38 +28,23 @@ void testServo() {
 
   Serial.println("Spinning...");
 
-  delay(4000);
-
-  myServo.write(0);  // Move to 0 degrees
   Serial.println("Moving to 0 degrees...");
 
   for (int i = 0; i <= 360; i += 10) {
-    myServo.write(i);  // Move servo to each position
+    myServo.write(i);
     Serial.print("Moving to ");
     Serial.print(i);
     Serial.println(" degrees...");
-    delay(300);  // Wait for servo to reach position
+    delay(300);
   }
-
-  delay(7000);
-/*
-  myServo.write(180);  // Move to 180 degrees
-  Serial.println("Moving to 180 degrees...");
-  delay(7000);
-
-  myServo.write(90);  // Move back to 90 degrees
-  Serial.println("Moving back to 90 degrees...");
-  delay(7000); */
-
-
   Serial.println("Stopping.");
 }
 
 void setupServo() {
   myServo.attach(SERVO_PIN);
-  myServo.write(90);  // Stop servo
-  myServo.setPeriodHertz(50);  // Standard 50Hz for servos
-  myServo.attach(SERVO_PIN, 1000, 2000);  // min/max pulse width in µs
+  myServo.write(90);
+  myServo.setPeriodHertz(50);
+  myServo.attach(SERVO_PIN, 200, 3000);
 }
 
 
@@ -89,14 +74,13 @@ void notify() {
     if (Ps3.data.button.cross) {
     unsigned long now = millis();
 
-    // Blink every 500ms while X is held
     if (now - lastBlinkTime > 500) {
       ledState = !ledState;
       digitalWrite(LED_PIN, ledState ? HIGH : LOW);
       lastBlinkTime = now;
     }
   } else {
-    digitalWrite(LED_PIN, LOW); // Turn off when X is released
+    digitalWrite(LED_PIN, LOW);
     ledState = false;
   }
 
@@ -115,7 +99,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
-  Ps3.begin("3C:8A:1F:AF:7F:D2");  // Replace with your MAC
+  Ps3.begin("3C:8A:1F:AF:7F:D2");
   setupServo();
 
   myServo.write(90);
@@ -123,7 +107,7 @@ void setup() {
 }
 
 void loop() {
-  // Nothing here; all handled by events
+  // Nothing for now
 }
 
 
