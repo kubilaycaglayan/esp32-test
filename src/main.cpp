@@ -72,9 +72,26 @@ void setupServo2() {
   servo2.write(90);
 }
 
+unsigned long lastXButtonPress = 0;
+
+void onXButtonPressed() {
+  // check ledState
+  unsigned long now = millis();
+  if (now - lastXButtonPress > 400) {
+    Serial.println("X button pressed");
+    if (ledState) {
+      digitalWrite(LED_PIN, LOW);
+      ledState = false;
+    } else {
+      digitalWrite(LED_PIN, HIGH);
+      ledState = true;
+    }
+    lastXButtonPress = now;
+  }
+}
 
 void notify() {
-  if (Ps3.data.button.cross) Serial.println("X button pressed");
+  if (Ps3.data.button.cross) onXButtonPressed();
   if (Ps3.data.button.circle) Serial.println("O button pressed");
   if (Ps3.data.button.triangle) Serial.println("Triangle button pressed");
   if (Ps3.data.button.square) Serial.println("Square button pressed");
@@ -95,19 +112,6 @@ void notify() {
   if (Ps3.data.button.left && Ps3.data.button.right) Serial.println("Left and Right pressed together");
   if (Ps3.data.button.l3 && Ps3.data.button.r3) Serial.println("L3 and R3 pressed together");
   if (Ps3.data.button.up && Ps3.data.button.left) Serial.println("Up and Left pressed together");
-
-    if (Ps3.data.button.cross) {
-    unsigned long now = millis();
-
-    if (now - lastBlinkTime > 500) {
-      ledState = !ledState;
-      digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-      lastBlinkTime = now;
-    }
-  } else {
-    digitalWrite(LED_PIN, LOW);
-    ledState = false;
-  }
 
   if (!Ps3.data.button.left && !Ps3.data.button.right) {
     steeringServo.write(90);
