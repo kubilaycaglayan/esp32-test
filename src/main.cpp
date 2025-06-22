@@ -8,19 +8,24 @@
 Servo steeringServo;
 Servo servo2;
 
-#define LED_PIN 4
+#define LED_PIN_ON_BOARD 2
+#define LED_PIN 23
 #define SERVO2_PIN 27
+#define ENA 15
+#define IN1 2
+#define IN2 4
 
 bool ledState = false;
+bool ledOnboardState = false;
 unsigned long lastBlinkTime = 0;
+unsigned long onBoardLedLastBlinkTime = 0;
+unsigned long ledOnBoardBlinkCount = 0;
 
-void onLeftButtonPressed() {
-  Serial.println("Left button pressed");
+void onStickLeft() {
   steeringServo.write(180);
 }
 
-void onRightButtonPressed() {
-  Serial.println("Right button pressed");
+void onStickRight() {
   steeringServo.write(0);
 }
 
@@ -99,8 +104,8 @@ void notify() {
   if (Ps3.data.button.start) Serial.println("Start button pressed");
   if (Ps3.data.button.up) onUpButtonPressed();
   if (Ps3.data.button.down) onDownButtonPressed();
-  if (Ps3.data.button.left) onLeftButtonPressed();
-  if (Ps3.data.button.right) onRightButtonPressed();
+  if (Ps3.data.button.left) Serial.println("Left button pressed");
+  if (Ps3.data.button.right) Serial.println("Right button pressed");
   if (Ps3.data.button.l1) Serial.println("L1 button pressed");
   if (Ps3.data.button.l2) Serial.println("L2 button pressed");
   if (Ps3.data.button.r1) Serial.println("R1 button pressed");
@@ -113,7 +118,30 @@ void notify() {
   if (Ps3.data.button.l3 && Ps3.data.button.r3) Serial.println("L3 and R3 pressed together");
   if (Ps3.data.button.up && Ps3.data.button.left) Serial.println("Up and Left pressed together");
 
-  if (!Ps3.data.button.left && !Ps3.data.button.right) {
+  if ( Ps3.data.analog.stick.rx < -5 ) {
+    Serial.println("Currently pulling analog stick to the left");
+    Serial.println(Ps3.data.analog.stick.rx);
+    onStickLeft();
+  }
+
+  if ( Ps3.data.analog.stick.rx > 5 ) {
+    Serial.println("Currently pulling analog stick to the right");
+    Serial.println(Ps3.data.analog.stick.rx);
+    onStickRight();
+  }
+
+  if ( Ps3.data.analog.stick.ry > 5 ) {
+    Serial.println(Ps3.data.analog.stick.ry);
+    Serial.println("Currentry pulling analog stick to down");
+  }
+
+  if ( Ps3.data.analog.stick.ry < -5 ) {
+    Serial.println(Ps3.data.analog.stick.ry);
+    Serial.println("Currently pulling analog stick to up");
+  }
+
+
+  if (abs(Ps3.data.analog.stick.rx) < 5) {
     steeringServo.write(90);
   }
 
@@ -122,13 +150,43 @@ void notify() {
   }
 }
 
+
+void blinkOnBoardLedThenReturnLastState(int blinkTimes, int delayTime = 500) {
+  unsigned stateToRestore = ledOnboardState;
+
+  for (int i = 0; i < blinkTimes; i++) {
+    if (ledOnboardState) {
+      digitalWrite(LED_PIN_ON_BOARD, LOW);
+      ledOnboardState = false;
+    } else {
+      digitalWrite(LED_PIN_ON_BOARD, HIGH);
+      ledOnboardState = true;
+    }
+    delay(delayTime);
+  }
+
+  if (stateToRestore) {
+    digitalWrite(LED_PIN_ON_BOARD, HIGH);
+    ledOnboardState = true;
+  } else {
+    digitalWrite(LED_PIN_ON_BOARD, LOW);
+    ledOnboardState = false;
+  }
+}
+
 void onConnect() {
   Serial.println("🎮 PS3 controller connected!");
+  blinkOnBoardLedThenReturnLastState(3, 500);
 }
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(LED_PIN_ON_BOARD, OUTPUT);
+
+  digitalWrite(LED_PIN_ON_BOARD, HIGH);
+  ledOnboardState = true;
+
   Ps3.attach(notify);
   Ps3.attachOnConnect(onConnect);
   Ps3.begin("3C:8A:1F:AF:7F:D2");
@@ -140,7 +198,7 @@ void setup() {
 }
 
 void loop() {
-  // Nothing for now
+
 }
 
 
