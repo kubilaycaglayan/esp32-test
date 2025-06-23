@@ -11,9 +11,10 @@ Servo servo2;
 #define LED_PIN_ON_BOARD 2
 #define LED_PIN 23
 #define SERVO2_PIN 27
-#define ENA 15
+#define ENA 4
 #define IN1 2
-#define IN2 4
+#define IN2 15
+#define DRIVE_MOTOR_CHANNEL 5
 
 bool ledState = false;
 bool ledOnboardState = false;
@@ -71,7 +72,9 @@ void testServo() {
 
 void setupServo2() {
   Serial.println("Setting up servo 2...");
-  servo2.attach(SERVO2_PIN);
+  int servo2Channel = servo2.attach(SERVO2_PIN);
+  Serial.print("ℹ️ Servo 2 attached to channel: ");
+  Serial.println(servo2Channel);
   servo2.setPeriodHertz(50);
   servo2.attach(SERVO2_PIN, 1000, 2000);
   servo2.write(90);
@@ -194,7 +197,41 @@ void setup() {
   setupServo2();
 
   steeringServo.write(90);
-  //testServo();
+
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+
+  // Set direction
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+
+  // Set speed
+  ledcAttachPin(ENA, DRIVE_MOTOR_CHANNEL);
+  Serial.print("ℹ️ Drive motor attached to channel: ");
+  Serial.println(DRIVE_MOTOR_CHANNEL);
+
+  ledcSetup(DRIVE_MOTOR_CHANNEL, 1000, 8);       // PWM channel 0 at 1kHz, 8-bit resolution
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 128);           // Speed: 0 (stop) to 255 (full speed)
+
+    // Run forward 3 seconds
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 200);
+  delay(3000);
+
+  // Stop
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 0);
+  delay(1000);
+
+  // Run backward 3 seconds
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 200);
+  delay(3000);
+
+  // Stop
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 0);
 }
 
 void loop() {
