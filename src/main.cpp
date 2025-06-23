@@ -56,6 +56,20 @@ void onDownButtonPressed() {
   }
 }
 
+void onStickUp() {
+  Serial.println("Analog stick pulled up");
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed forward
+}
+
+void onStickDown() {
+  Serial.println("Analog stick pulled down");
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed backward
+}
+
 void testServo() {
   Serial.println("🚀 Starting servo test...");
 
@@ -76,7 +90,9 @@ void setupServo2() {
   Serial.print("ℹ️ Servo 2 attached to channel: ");
   Serial.println(servo2Channel);
   servo2.setPeriodHertz(50);
-  servo2.attach(SERVO2_PIN, 1000, 2000);
+  int servo2Channel_2 = servo2.attach(SERVO2_PIN, 1000, 2000);
+  Serial.print("ℹ️ Servo 2 attached to channel (with range): ");
+  Serial.println(servo2Channel_2);
   servo2.write(90);
 }
 
@@ -122,25 +138,29 @@ void notify() {
   if (Ps3.data.button.up && Ps3.data.button.left) Serial.println("Up and Left pressed together");
 
   if ( Ps3.data.analog.stick.rx < -5 ) {
-    Serial.println("Currently pulling analog stick to the left");
-    Serial.println(Ps3.data.analog.stick.rx);
     onStickLeft();
   }
 
   if ( Ps3.data.analog.stick.rx > 5 ) {
-    Serial.println("Currently pulling analog stick to the right");
-    Serial.println(Ps3.data.analog.stick.rx);
     onStickRight();
   }
 
   if ( Ps3.data.analog.stick.ry > 5 ) {
     Serial.println(Ps3.data.analog.stick.ry);
     Serial.println("Currentry pulling analog stick to down");
+    onStickDown();
   }
 
   if ( Ps3.data.analog.stick.ry < -5 ) {
     Serial.println(Ps3.data.analog.stick.ry);
     Serial.println("Currently pulling analog stick to up");
+    onStickUp();
+  }
+
+  if (abs(Ps3.data.analog.stick.ry) < 5) {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    ledcWrite(DRIVE_MOTOR_CHANNEL, 0); // Stop the motor
   }
 
 
@@ -182,22 +202,7 @@ void onConnect() {
   blinkOnBoardLedThenReturnLastState(3, 500);
 }
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(LED_PIN_ON_BOARD, OUTPUT);
-
-  digitalWrite(LED_PIN_ON_BOARD, HIGH);
-  ledOnboardState = true;
-
-  Ps3.attach(notify);
-  Ps3.attachOnConnect(onConnect);
-  Ps3.begin("3C:8A:1F:AF:7F:D2");
-  setupServo();
-  setupServo2();
-
-  steeringServo.write(90);
-
+void setupDriveMotor() {
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -211,27 +216,25 @@ void setup() {
   Serial.print("ℹ️ Drive motor attached to channel: ");
   Serial.println(DRIVE_MOTOR_CHANNEL);
 
-  ledcSetup(DRIVE_MOTOR_CHANNEL, 1000, 8);       // PWM channel 0 at 1kHz, 8-bit resolution
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 128);           // Speed: 0 (stop) to 255 (full speed)
-
-    // Run forward 3 seconds
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 200);
-  delay(3000);
-
-  // Stop
+  ledcSetup(DRIVE_MOTOR_CHANNEL, 1000, 8);
   ledcWrite(DRIVE_MOTOR_CHANNEL, 0);
-  delay(1000);
+}
 
-  // Run backward 3 seconds
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 200);
-  delay(3000);
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(LED_PIN_ON_BOARD, OUTPUT);
 
-  // Stop
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 0);
+  digitalWrite(LED_PIN_ON_BOARD, HIGH);
+  ledOnboardState = true;
+
+  Ps3.attach(notify);
+  Ps3.attachOnConnect(onConnect);
+  Ps3.begin("3C:8A:1F:AF:7F:D2");
+
+  setupServo();
+  setupServo2();
+  setupDriveMotor();
 }
 
 void loop() {

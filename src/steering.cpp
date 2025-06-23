@@ -9,7 +9,10 @@ void setupServo() {
   Serial.print("ℹ️ Steering servo attached to channel: ");
   Serial.println(steeringServoChannel);
 
-  steeringServo.write(90);
   steeringServo.setPeriodHertz(50);
-  steeringServo.attach(SERVO_PIN, 200, 3000);
+  int steeringServoChannel_2 = steeringServo.attach(SERVO_PIN, 200, 3000);
+  Serial.print("ℹ️ Steering servo attached to channel (with range): ");
+  Serial.println(steeringServoChannel_2);
+
+  steeringServo.write(90);
 }
