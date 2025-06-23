@@ -19,9 +19,11 @@ Servo servo2;
 
 bool ledState = false;
 bool ledOnboardState = false;
+bool rumbleOn = false;
 unsigned long lastBlinkTime = 0;
 unsigned long onBoardLedLastBlinkTime = 0;
 unsigned long ledOnBoardBlinkCount = 0;
+unsigned long rumbleStart = 0;
 
 void onStickLeft() {
   steeringServo.write(180);
@@ -55,31 +57,26 @@ void onDownButtonPressed() {
     servo2.write(90);
     lastDownButtonPress = now;
   }
+
+  rumbleStart = millis();
+  Ps3.setRumble(50, -1);
+  rumbleOn = true;
 }
 
 void onStickUp() {
-  Serial.println("Analog stick pulled up");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   int speed = map(Ps3.data.analog.stick.ry, 0, -127, 0, 255);
-  speed = constrain(speed, 0, 255); // Ensure speed is within valid range
-  ledcWrite(DRIVE_MOTOR_CHANNEL, speed); // Set speed based on joystick position
-  Serial.print("Setting motor speed to: ");
-  Serial.println(speed);
-
+  speed = constrain(speed, 0, 255);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, speed);
 }
 
 void onStickDown() {
-  Serial.println("Analog stick pulled down");
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  // ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed backward
   int speed = map(Ps3.data.analog.stick.ry, 0, 127, 0, 255);
-  speed = constrain(speed, 0, 255); // Ensure speed is within valid range
-  ledcWrite(DRIVE_MOTOR_CHANNEL, speed); // Set speed based on joystick position
-  Serial.print("Setting motor speed to: ");
-  Serial.println(speed);
-
+  speed = constrain(speed, 0, 255);
+  ledcWrite(DRIVE_MOTOR_CHANNEL, speed);
 }
 
 void testServo() {
@@ -250,7 +247,10 @@ void setup() {
 }
 
 void loop() {
-
+  if (rumbleOn && millis() - rumbleStart > 500) {
+    Ps3.setRumble(0, 0);  // Stop it manually
+    rumbleOn = false;
+  }
 }
 
 
