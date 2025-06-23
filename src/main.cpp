@@ -61,14 +61,25 @@ void onStickUp() {
   Serial.println("Analog stick pulled up");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed forward
+  int speed = map(Ps3.data.analog.stick.ry, 0, -127, 0, 255);
+  speed = constrain(speed, 0, 255); // Ensure speed is within valid range
+  ledcWrite(DRIVE_MOTOR_CHANNEL, speed); // Set speed based on joystick position
+  Serial.print("Setting motor speed to: ");
+  Serial.println(speed);
+
 }
 
 void onStickDown() {
   Serial.println("Analog stick pulled down");
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed backward
+  // ledcWrite(DRIVE_MOTOR_CHANNEL, 255); // Full speed backward
+  int speed = map(Ps3.data.analog.stick.ry, 0, 127, 0, 255);
+  speed = constrain(speed, 0, 255); // Ensure speed is within valid range
+  ledcWrite(DRIVE_MOTOR_CHANNEL, speed); // Set speed based on joystick position
+  Serial.print("Setting motor speed to: ");
+  Serial.println(speed);
+
 }
 
 void testServo() {
