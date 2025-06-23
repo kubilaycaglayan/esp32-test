@@ -12,9 +12,10 @@ Servo servo2;
 #define LED_PIN 23
 #define SERVO2_PIN 27
 #define ENA 4
-#define IN1 2
+#define IN1 5
 #define IN2 15
-#define DRIVE_MOTOR_CHANNEL 5
+
+#define DRIVE_MOTOR_CHANNEL 15
 
 bool ledState = false;
 bool ledOnboardState = false;
