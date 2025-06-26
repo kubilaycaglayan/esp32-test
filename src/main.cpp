@@ -9,7 +9,10 @@ Servo steeringServo;
 Servo servo2;
 
 #define LED_PIN_ON_BOARD 2
-#define LED_PIN 23
+#define HEAD_LIGHTS 23
+#define TAIL_LIGHTS 22
+#define NEON_MID_LIGHTS 01
+#define SERVO_PIN 14
 #define SERVO2_PIN 27
 #define ENA 4
 #define IN1 5
@@ -17,7 +20,9 @@ Servo servo2;
 
 #define DRIVE_MOTOR_CHANNEL 15
 
-bool ledState = false;
+bool headlightState = false;
+bool tailLightState = false;
+bool neonMidLightsState = false;
 bool ledOnboardState = false;
 bool rumbleOn = false;
 unsigned long lastBlinkTime = 0;
@@ -109,26 +114,50 @@ void setupServo2() {
 unsigned long lastXButtonPress = 0;
 
 void onXButtonPressed() {
-  // check ledState
+  // check headlightState
   unsigned long now = millis();
   if (now - lastXButtonPress > 400) {
     Serial.println("X button pressed");
-    if (ledState) {
-      digitalWrite(LED_PIN, LOW);
-      ledState = false;
+    if (headlightState) {
+      digitalWrite(HEAD_LIGHTS, LOW);
+      headlightState = false;
     } else {
-      digitalWrite(LED_PIN, HIGH);
-      ledState = true;
+      digitalWrite(HEAD_LIGHTS, HIGH);
+      headlightState = true;
     }
     lastXButtonPress = now;
   }
 }
 
+void onSquareButtonPressed() {
+  // check tailLightState
+  if (tailLightState) {
+    digitalWrite(TAIL_LIGHTS, LOW);
+    tailLightState = false;
+  } else {
+    digitalWrite(TAIL_LIGHTS, HIGH);
+    tailLightState = true;
+  }
+  Serial.println("Square button pressed");
+}
+
+void onTriangleButtonPressed() {
+  // check neonMidLightsState
+  if (neonMidLightsState) {
+    digitalWrite(NEON_MID_LIGHTS, LOW);
+    neonMidLightsState = false;
+  } else {
+    digitalWrite(NEON_MID_LIGHTS, HIGH);
+    neonMidLightsState = true;
+  }
+  Serial.println("Triangle button pressed");
+}
+
 void notify() {
   if (Ps3.data.button.cross) onXButtonPressed();
   if (Ps3.data.button.circle) Serial.println("O button pressed");
-  if (Ps3.data.button.triangle) Serial.println("Triangle button pressed");
-  if (Ps3.data.button.square) Serial.println("Square button pressed");
+  if (Ps3.data.button.triangle) onTriangleButtonPressed();
+  if (Ps3.data.button.square) onSquareButtonPressed();
   if (Ps3.data.button.select) Serial.println("Select button pressed");
   if (Ps3.data.button.start) Serial.println("Start button pressed");
   if (Ps3.data.button.up) onUpButtonPressed();
@@ -232,8 +261,10 @@ void setupDriveMotor() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(HEAD_LIGHTS, OUTPUT);
   pinMode(LED_PIN_ON_BOARD, OUTPUT);
+  pinMode(TAIL_LIGHTS, OUTPUT);
+  pinMode(NEON_MID_LIGHTS, OUTPUT);
 
   digitalWrite(LED_PIN_ON_BOARD, HIGH);
   ledOnboardState = true;
@@ -245,6 +276,10 @@ void setup() {
   setupServo();
   setupServo2();
   setupDriveMotor();
+
+
+
+
 }
 
 void loop() {
