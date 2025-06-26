@@ -26,11 +26,11 @@ unsigned long ledOnBoardBlinkCount = 0;
 unsigned long rumbleStart = 0;
 
 void onStickLeft() {
-  steeringServo.write(180);
+  steeringServo.write(0);
 }
 
 void onStickRight() {
-  steeringServo.write(0);
+  steeringServo.write(180);
 }
 
 unsigned long lastUpButtonPress = 0;
@@ -64,16 +64,17 @@ void onDownButtonPressed() {
 }
 
 void onStickUp() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
   int speed = map(Ps3.data.analog.stick.ry, 0, -127, 0, 255);
   speed = constrain(speed, 0, 255);
   ledcWrite(DRIVE_MOTOR_CHANNEL, speed);
 }
 
 void onStickDown() {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
+    digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+
   int speed = map(Ps3.data.analog.stick.ry, 0, 127, 0, 255);
   speed = constrain(speed, 0, 255);
   ledcWrite(DRIVE_MOTOR_CHANNEL, speed);
