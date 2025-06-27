@@ -11,7 +11,7 @@ Servo servo2;
 #define LED_PIN_ON_BOARD 2
 #define HEAD_LIGHTS 23
 #define TAIL_LIGHTS 22
-#define NEON_MID_LIGHTS 01
+#define NEON_MID_LIGHTS 21
 #define SERVO_PIN 14
 #define SERVO2_PIN 27
 #define ENA 4
@@ -129,28 +129,40 @@ void onXButtonPressed() {
   }
 }
 
+unsigned long lastSquareButtonPress = 0;
+
 void onSquareButtonPressed() {
-  // check tailLightState
-  if (tailLightState) {
-    digitalWrite(TAIL_LIGHTS, LOW);
-    tailLightState = false;
-  } else {
-    digitalWrite(TAIL_LIGHTS, HIGH);
-    tailLightState = true;
+  unsigned long now = millis();
+  if (now - lastSquareButtonPress > 400) { // debounce time
+    // check tailLightState
+    if (tailLightState) {
+      digitalWrite(TAIL_LIGHTS, LOW);
+      tailLightState = false;
+    } else {
+      digitalWrite(TAIL_LIGHTS, HIGH);
+      tailLightState = true;
+    }
+    Serial.println("Square button pressed");
+    lastSquareButtonPress = now; // update last press time
   }
-  Serial.println("Square button pressed");
 }
 
+unsigned long lastTriangleButtonPress = 0;
+
 void onTriangleButtonPressed() {
-  // check neonMidLightsState
-  if (neonMidLightsState) {
-    digitalWrite(NEON_MID_LIGHTS, LOW);
-    neonMidLightsState = false;
-  } else {
-    digitalWrite(NEON_MID_LIGHTS, HIGH);
-    neonMidLightsState = true;
+  unsigned long now = millis();
+  if (now - lastTriangleButtonPress > 400) { // debounce time
+    // check neonMidLightsState
+    if (neonMidLightsState) {
+      digitalWrite(NEON_MID_LIGHTS, LOW);
+      neonMidLightsState = false;
+    } else {
+      digitalWrite(NEON_MID_LIGHTS, HIGH);
+      neonMidLightsState = true;
+    }
+    Serial.println("Triangle button pressed");
+    lastTriangleButtonPress = now; // update last press time
   }
-  Serial.println("Triangle button pressed");
 }
 
 void notify() {
@@ -276,10 +288,6 @@ void setup() {
   setupServo();
   setupServo2();
   setupDriveMotor();
-
-
-
-
 }
 
 void loop() {
